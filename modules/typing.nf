@@ -98,7 +98,7 @@ process estimate_hla_types {
     publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
     
     input:
-        tuple val(dataset), path(part_sam)
+        tuple val(dataset), path(part_sam), path(ref)
     output:
         tuple val(dataset), file(hla_txt)
     script:
