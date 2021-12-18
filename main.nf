@@ -51,7 +51,7 @@ workflow {
     map_to_hla_loci(input)
 
     // 7) Estimate hla types
-    estimate_hla_types(map_to_hla_loci.out)
-
+    input = map_to_hla_loci.out.combine(ref)
+    estimate_hla_types(input)
 
 }
