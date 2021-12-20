@@ -85,6 +85,9 @@ RUN conda clean --all --yes && \
 #perl 5.26.2
 RUN conda clean --all --yes && \
     conda install -c anaconda perl=5.26.2
+#minimap2
+RUN conda clean --all --yes && \
+    conda install -c bioconda minimap2
 
 RUN useradd -m docker && echo "docker:docker" | chpasswd && adduser docker sudo
 
