@@ -8,19 +8,21 @@ The pipeline does Human Leukozyte Antigen (HLA) typing using [HLA-VBSEQ]() from 
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker and singularity containers making installation trivial and results highly reproducible.
 
-## Quick Start
+## Installation 
+1. [Nextflow](https://www.nextflow.io/docs/latest/getstarted.html)
+2. [Docker](https://www.digitalocean.com/community/tutorials/how-to-install-and-use-docker-on-ubuntu-18-04) 
+3. [Singularity](https://sylabs.io/guides/3.0/user-guide/installation.html)
 
-1. Install [`nextflow`](https://nf-co.re/usage/installation)
+## Running the pipeline
+The pipeline does not require installation as `NextFlow` will automatically fetch it from `GitHub`.
 
-2. Install either [`Docker`](https://docs.docker.com/engine/installation/) or [`Singularity`](https://www.sylabs.io/guides/3.0/user-guide/) for full pipeline reproducibility 
-
-3. Download the pipeline and test it on a minimal dataset with a single command:
+To execute the pipeline on test dataset run:
 
     ```bash
     nextflow run nanjalaruth/HLA-typing -profile test,<docker/singularity/conda/institute>
     ```
 
-4. Start running your own analysis!
+Start running your own analysis!
 
     ```bash
     nextflow run nanjalaruth/HLA-typing -profile <docker/singularity/conda/institute> --input '*_R{1,2}.fastq.gz'
