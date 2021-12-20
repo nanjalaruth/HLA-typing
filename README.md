@@ -4,7 +4,7 @@
 
 ## Introduction
 
-The pipeline does Human Leukozyte Antigen (HLA) typing using [HLA-VBSEQ]() from high-throughput sequencing data.
+The pipeline does Human Leukocyte Antigen (HLA) typing using [HLA-VBSEQ](https://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-16-S2-S7) from high-throughput sequencing data.
 
 The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool to run tasks across multiple compute infrastructures in a very portable manner. It comes with docker and singularity containers making installation trivial and results highly reproducible.
 
