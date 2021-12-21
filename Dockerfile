@@ -77,8 +77,8 @@ RUN conda clean --all --yes && \
 RUN conda clean --all --yes && \
     conda install -c bioconda java-jdk 
 #python 3.6
-RUN conda clean --all --yes && \
-    conda install -c anaconda python=3.6
+# RUN conda clean --all --yes && \
+    # conda install -c anaconda python=3.6
 # pandas 
 RUN conda clean --all --yes && \
     conda install -c anaconda pandas
