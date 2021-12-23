@@ -82,6 +82,9 @@ RUN conda clean --all --yes && \
 # pandas 
 RUN conda clean --all --yes && \
     conda install -c anaconda pandas
+#bwa
+RUN conda clean --all --yes && \
+    conda install -c bioconda bwa
 #perl 5.26.2
 RUN conda clean --all --yes && \
     conda install -c anaconda perl=5.26.2
