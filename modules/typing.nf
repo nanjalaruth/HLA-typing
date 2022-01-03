@@ -22,7 +22,7 @@ process index_hla {
         tuple val(dataset), path(sorted_bam)
     script:
         """
-        java -jar -Xmx32g -Xms32g /scratch3/users/nanje/HLA-VBSEQ/bamNameIndex.jar index ${sorted_bam}
+        java -jar -Xmx32g -Xms32g /usr/local/bin/bamNameIndex.jar index ${sorted_bam}
         """
 }
 
@@ -55,7 +55,7 @@ process unmapped_reads {
         fastq_2 = "${dataset}_unmapped_2.fastq"
         """
         samtools view -bh -f 12 ${sorted_bam} > ${dataset}.sorted_unmapped.bam
-        java -jar /scratch3/users/nanje/HLA-VBSEQ/picard-tools-1.119/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=${fastq_1} F2=${fastq_2}
+        java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=${fastq_1} F2=${fastq_2}
         """
 }
 
@@ -106,12 +106,33 @@ process estimate_hla_types {
         """
         #alpha_zero is a hyperparameter
         #For paired-end read data:
-        #java -jar HLAVBSeq.jar hla_all_v2.fasta NA12878_part.sam NA12878_result.txt --alpha_zero 0.01 --is_paired
+        #java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
 
         #For single-end read data:
-        java -jar /scratch3/users/nanje/HLA-VBSEQ/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01
+        java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01
         """
 }
 
+process hla_types_out {
+    tag "Printing HLA types to a csv file"
+    publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
+    
+    input:
+        tuple val(dataset), path(result_txt)
+    output:
+        tuple val(dataset), file(hla_types)
+    script:
+        hla_types = "${dataset}_hlatypes.txt"
+        """
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^A\\*" | sort -k2 -n -r | cut -f1 > HLA_A.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^B\\*" | sort -k2 -n -r | cut -f1 > HLA_B.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^C\\*" | sort -k2 -n -r | cut -f1 > HLA_C.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DRB1\\*" | sort -k2 -n -r | cut -f1 > HLA_DRB1.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQA1\\*" | sort -k2 -n -r | cut -f1 > HLA_DQA1.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQB1\\*" | sort -k2 -n -r | cut -f1 > HLA_DQB1.txt
+        paste HLA_A.txt HLA_B.txt HLA_C.txt HLA_DRB1.txt HLA_DQA1.txt HLA_DQB1.txt > hla_types
+        ( echo -e "HLA_A\tHLA_B\tHLA_C\tHLA_DRB1\tHLA_DQA1\tHLA_DQB1"; cat hla_types ) > ${hla_types}
+        """
+}
 
 
