@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 
 include { mapping; sam_bam } from './modules/fastq_preprocessing'
 include { extract_hla_reads; index_hla; read_pairs_search; unmapped_reads; 
-    combine_reads; map_to_hla_loci; estimate_hla_types} from './modules/typing.nf'
+    combine_reads; map_to_hla_loci; estimate_hla_types; hla_types_out} from './modules/typing.nf'
 
 workflow {
     
@@ -53,5 +53,7 @@ workflow {
     // 7) Estimate hla types
     input = map_to_hla_loci.out.combine(hla_ref)
     estimate_hla_types(input)
+    // estimate_hla_types.out.view()
+    hla_types_out(estimate_hla_types.out)
 
 }
