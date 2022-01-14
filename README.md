@@ -25,5 +25,5 @@ To execute the pipeline on test dataset run:
 Start running your own analysis!
 
     ```bash
-    nextflow run nanjalaruth/HLA-typing -profile <docker/singularity/conda/institute> --input '*_R{1,2}.fastq.gz'
+    nextflow run main.nf -profile singularity -resume --input "*_{1,2}*.fastq.gz" --reference_genome "path to the human reference genome <hg19>" --hla_ref "path to the hla             reference genome <hla_all_v2.fasta>" --hla_txt_file "path to the <Allelelist_v2.txt> file"
     ```
