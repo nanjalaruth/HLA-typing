@@ -88,8 +88,14 @@ process map_to_hla_loci {
         sam = "${dataset}_part.sam"
         """
         #mapping using -p to map paired end as single-end
+        #index reference
         bwa index ${ref}
-        bwa mem -t 8 -P -L 10000 -a ${ref} ${fastq_1} ${fastq_2} -p > ${sam}
+        #sort read pairs
+        awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq_1} | sort -S 8G -T. > read1.txt
+        awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq_2} | sort -S 8G -T. > read2.txt
+        join read1.txt read2.txt | awk '{print \$1"\\n"\$2"\\n+\\n"\$3 > "r1.fq";print \$1"\\n"\$4"\\n+\\n"\$5 > "r2.fq"}'
+        #mapping
+        bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
         """
 }
 
@@ -120,18 +126,20 @@ process hla_types_out {
     input:
         tuple val(dataset), path(result_txt)
     output:
-        tuple val(dataset), file(hla_types)
+        tuple val(dataset), file(hla_types), file(final_report)
     script:
         hla_types = "${dataset}_hlatypes.txt"
+        final_report = "${dataset}_report.d4.txt"
         """
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^A\\*" | sort -k2 -n -r | cut -f1 > HLA_A.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^B\\*" | sort -k2 -n -r | cut -f1 > HLA_B.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^C\\*" | sort -k2 -n -r | cut -f1 > HLA_C.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^A\\*" | sort -k2 -n -r  > HLA_A.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^B\\*" | sort -k2 -n -r  > HLA_B.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^C\\*" | sort -k2 -n -r  > HLA_C.txt
         perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DRB1\\*" | sort -k2 -n -r | cut -f1 > HLA_DRB1.txt
         perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQA1\\*" | sort -k2 -n -r | cut -f1 > HLA_DQA1.txt
         perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQB1\\*" | sort -k2 -n -r | cut -f1 > HLA_DQB1.txt
         paste HLA_A.txt HLA_B.txt HLA_C.txt HLA_DRB1.txt HLA_DQA1.txt HLA_DQB1.txt > hla_types
         ( echo -e "HLA_A\tHLA_B\tHLA_C\tHLA_DRB1\tHLA_DQA1\tHLA_DQB1"; cat hla_types ) > ${hla_types}
+        python /usr/local/bin/call_hla_digits.py -v ${result_txt} -a /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt -r 90 -d 4 > ${final_report}
         """
 }
 
