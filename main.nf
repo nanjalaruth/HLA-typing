@@ -73,7 +73,6 @@ if( params.bam ) log.info "BAM file format detected."
 
 // Header log info
 def summary = [:]
-if (workflow.revision) summary['Pipeline Release'] = workflow.revision
 summary['File Type']        = params.bam ? 'BAM' : 'Other (fastq, fastq.gz, ...)'
 summary['Seq Type']         = params.seqtype
 summary['Input']            = params.input_paths ? params.input_paths : params.input
