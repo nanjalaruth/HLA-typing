@@ -16,12 +16,13 @@ The pipeline is built using [Nextflow](https://www.nextflow.io), a workflow tool
 ## Running the pipeline
 The pipeline does not require installation as `NextFlow` will automatically fetch it from `GitHub`.
 
+### Test data
 To execute the pipeline on test dataset run:
 
     ```bash
     nextflow run nanjalaruth/HLA-typing -profile test,slurm,<docker/singularity/conda/institute>
     ```
-
+### Own data
 Start running your own analysis either by using flags as shown below:
 
     ```bash
