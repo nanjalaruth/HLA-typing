@@ -22,10 +22,16 @@ To execute the pipeline on test dataset run:
     nextflow run nanjalaruth/HLA-typing -profile test,slurm,<docker/singularity/conda/institute>
     ```
 
-Start running your own analysis!
+Start running your own analysis either by using flags as shown below:
 
     ```bash
     nextflow run main.nf -profile singularity -resume --input "*_{1,2}*.fastq.gz" \
     --reference_genome "path to the human reference genome <hg19>" --hla_ref "path to the hla reference genome <hla_all_v2.fasta>" \
     --hla_txt_file "path to the <Allelelist_v2.txt> file"
+    ```
+ or run your own analysis by modifying the test.config file to suit the path to your data location and then run the command as below:
+ 
+    ```
+    nextflow run main.nf -profile singularity -c <path to your edited config file> -resume
+    
     ```
