@@ -1,6 +1,8 @@
 # HLA-typing
 
 [![Nextflow](https://img.shields.io/badge/nextflow-%E2%89%A520.04.0-brightgreen.svg)](https://www.nextflow.io/)
+![Singularity Container available](https://img.shields.io/badge/singularity-available-7E4C74.svg)
+[![Docker](https://img.shields.io/badge/docker%20registry-Quay.io-red)](https://quay.io/repository/nanjalaruth/hlatyping)
 
 ## Introduction
 
@@ -47,3 +49,7 @@ Start running your own analysis either by using flags as shown below:
 | --reference_genome    | \<hg19\>              | Path to the reference genome to which the samples will be mapped |
 | --hla_ref | \<'hla_ref.fasta'>                      | Path to the hla reference genome |
 | --hla_txt_file   | \<Allele_v2.txt\>                        | Path to the hla allele text file        |
+| --singleEnd  |             | Specifies that the input files are not paired reads (default is paired-end). |
+
+## Support
+I track open tasks using github's [issues](https://github.com/nanjalaruth/HLA-typing/issues)
