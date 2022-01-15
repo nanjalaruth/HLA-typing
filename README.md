@@ -26,12 +26,23 @@ Start running your own analysis either by using flags as shown below:
 
     ```bash
     nextflow run main.nf -profile singularity -resume --input "*_{1,2}*.fastq.gz" \
-    --reference_genome "path to the human reference genome <hg19>" --hla_ref "path to the hla reference genome <hla_all_v2.fasta>" \
+    --reference_genome "path to the human reference genome <hg19>" \
+    --hla_ref "path to the hla reference genome <hla_all_v2.fasta>" \
     --hla_txt_file "path to the <Allelelist_v2.txt> file"
     ```
  or run your own analysis by modifying the test.config file to suit the path to your data location and then run the command as below:
  
     ```
     nextflow run main.nf -profile singularity -c <path to your edited config file> -resume
-    
     ```
+
+## Arguments
+
+### Required Arguments
+| Argument  | Usage                            | Description                                                          |
+|-----------|----------------------------------|----------------------------------------------------------------------|
+| -profile  | \<base,slurm\>                    | Configuration profile to use.                                       |
+| --input  | \</project/\*\_{R1,R2}\*.fastq\> | Directory pattern for fastq files.                                   |
+| --reference_genome    | \<hg19\>              | Path to the reference genome to which the samples will be mapped |
+| --hla_ref | \<'hla_ref.fasta'>                      | Path to the hla reference genome |
+| --hla_txt_file   | \<Allele_v2.txt\>                        | Path to the hla allele text file        |
