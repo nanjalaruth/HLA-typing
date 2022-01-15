@@ -33,7 +33,7 @@ Start running your own analysis either by using flags as shown below:
     --hla_ref "path to the hla reference genome <hla_all_v2.fasta>" \
     --hla_txt_file "path to the <Allelelist_v2.txt> file"
     ```
- or run your own analysis by modifying the test.config file to suit the path to your data location and then run the command as below:
+ or run your own analysis by modifying the conf/test.config file to suit the path to your data location and then run the command as below:
  
     ```
     nextflow run main.nf -profile singularity -c <path to your edited config file> -resume
