@@ -22,7 +22,8 @@ The pipeline does not require installation as `NextFlow` will automatically fetc
 To execute the pipeline on test dataset run:
 
     ```bash
-    nextflow run nanjalaruth/HLA-typing -profile test,slurm,<docker/singularity/conda/institute>
+    nextflow run nanjalaruth/HLA-typing -profile test,slurm,<docker/singularity/conda/institute> \
+    --reference_genome "path to the human reference genome <hg19>"
     ```
 ### Own data
 Start running your own analysis either by using flags as shown below:
