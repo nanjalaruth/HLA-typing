@@ -14,6 +14,10 @@ process mapping {
             """
             minimap2 -t 32 -ax sr ${ref} ${reads[0]} ${reads[1]} > ${mapping_out}
             """
+        else
+            """
+            minimap2 -ax sr ${ref} ${reads[0]} > ${mapping_out}  
+            """
 }
 
 
