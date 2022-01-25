@@ -22,7 +22,7 @@ The pipeline does not require installation as `NextFlow` will automatically fetc
 To execute the pipeline on test dataset run:
 
     ```bash
-    nextflow run nanjalaruth/HLA-typing -profile test,singularity  -r main --reference_genome "path to the human reference genome <hg19>"
+    nextflow run nanjalaruth/HLA-typing -profile test,singularity  -r main --reference_genome "path to the human reference genome <hg19>" -resume
     ```
 ### Own data
 Start running your own analysis either by using flags as shown below:
@@ -31,7 +31,7 @@ Start running your own analysis either by using flags as shown below:
     nextflow run main.nf -profile singularity -resume --input "*_{1,2}*.fastq.gz" \
     --reference_genome "path to the human reference genome <hg19>" \
     --hla_ref "path to the hla reference genome <hla_all_v2.fasta>" \
-    --hla_txt_file "path to the <Allelelist_v2.txt> file"
+    --hla_txt_file "path to the <Allelelist_v2.txt> file" 
     ```
  or run your own analysis by modifying the conf/test.config file to suit the path to your data location and then run the command as below:
  
