@@ -37,7 +37,7 @@ process read_pairs_search {
     script:
         if( !params.single_end)
             """
-            samtools fastq -1 unzipped_1.fastq -2 unzipped_1.fastq ${partial_bam}
+            samtools fastq -1 unzipped_1.fastq -2 unzipped_2.fastq ${partial_bam}
             """
         else
             """
