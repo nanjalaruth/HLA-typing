@@ -77,7 +77,8 @@ process combine_reads {
         script:
             if( !params.single_end)
                 """
-                cat ${unzipped[0]} ${unzipped[1]} ${unmapped[0]} ${unmapped[1]} > combined_1.fastq
+                cat ${unzipped[0]} ${unmapped[0]} > combined_1.fastq
+                cat ${unzipped[1]} ${unmapped[1]} > combined_2.fastq
                 """
             else
                 """
