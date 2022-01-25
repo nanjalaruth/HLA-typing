@@ -22,8 +22,7 @@ The pipeline does not require installation as `NextFlow` will automatically fetc
 To execute the pipeline on test dataset run:
 
     ```bash
-    nextflow run nanjalaruth/HLA-typing -profile test,slurm,<docker/singularity/conda/institute> \
-    --reference_genome "path to the human reference genome <hg19>"
+    nextflow run nanjalaruth/HLA-typing -profile test,singularity  -r main --reference_genome "path to the human reference genome <hg19>"
     ```
 ### Own data
 Start running your own analysis either by using flags as shown below:
@@ -39,7 +38,13 @@ Start running your own analysis either by using flags as shown below:
     ```
     nextflow run main.nf -profile singularity -c <path to your edited config file> -resume
     ```
+    
+### To run the updated version of this pipeline, run:
 
+    ```bash
+    nextflow pull nanjalaruth/HLA-typing
+    ```
+    
 ## Arguments
 
 ### Required Arguments
@@ -50,6 +55,7 @@ Start running your own analysis either by using flags as shown below:
 | --reference_genome    | \<hg19\>              | Path to the reference genome to which the samples will be mapped |
 | --hla_ref | \<'hla_ref.fasta'>                      | Path to the hla reference genome |
 | --hla_txt_file   | \<Allele_v2.txt\>                        | Path to the hla allele text file        |
+| -r    | \<revision\>  | Pipeline revision     |
 | --singleEnd  |             | Specifies that the input files are not paired reads (default is paired-end). |
 
 ## Support
