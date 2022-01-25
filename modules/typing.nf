@@ -33,13 +33,16 @@ process read_pairs_search {
     input:
         tuple val(dataset), path(partial_bam)
     output:
-        tuple val(dataset), file(fastq_1), file(fastq_2)
+        tuple val(dataset), path("unzipped_{1,2}.fastq")
     script:
-        fastq_1 = "${dataset}_partial_1.fastq"
-        fastq_2 = "${dataset}_partial_2.fastq"
-        """
-        samtools fastq -1 ${fastq_1} -2 ${fastq_2} ${partial_bam}
-        """
+        if( !params.single_end)
+            """
+            samtools fastq -1 unzipped_1.fastq -2 unzipped_1.fastq ${partial_bam}
+            """
+        else
+            """
+            samtools fastq ${partial_bam} > unzipped_1.fastq 
+            """
 }
 
 process unmapped_reads {
@@ -49,54 +52,73 @@ process unmapped_reads {
     input:
         tuple val(dataset), path(sorted_bam)
     output:
-        tuple val(dataset), path(fastq_1), path(fastq_2)
+        tuple val(dataset), path("unmapped_{1,2}.fastq")
     script:
-        fastq_1 = "${dataset}_unmapped_1.fastq"
-        fastq_2 = "${dataset}_unmapped_2.fastq"
-        """
-        samtools view -bh -f 12 ${sorted_bam} > ${dataset}.sorted_unmapped.bam
-        java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=${fastq_1} F2=${fastq_2}
-        """
+        if( !params.single_end)
+            """
+            samtools view -bh -f 12 ${sorted_bam} > ${dataset}.sorted_unmapped.bam
+            java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=unmapped_1.fastq F2=unmapped_2.fastq
+            """
+        else
+            """
+            samtools view -bh -f 12 ${sorted_bam} > ${dataset}.sorted_unmapped.bam
+            java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=unmapped_1.fastq
+            """
 }
-
+// if( !params.single_end)
 process combine_reads {
     tag "Combining reads in FASTQ format"
     publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
-    
-    input:
-        tuple val(dataset), path(partial_fastq_1), path(partial_fastq_2), path(unmapped_fastq_1), path(unmapped_fastq_2)
-    output:
-        tuple val(dataset), path(fastq_1), path(fastq_2)
-    script:
-        fastq_1 = "${dataset}_part_1.fastq"
-        fastq_2 = "${dataset}_part_2.fastq"
-        """
-        cat ${partial_fastq_1} ${unmapped_fastq_1} > ${fastq_1}
-        cat ${partial_fastq_2} ${unmapped_fastq_2} > ${fastq_2}
-        """
-}
+        input:
+            tuple val(dataset), path(unzipped)  
+            tuple val(dataset), path(unmapped)  
+        output:
+            tuple val(dataset), path("combined_{1,2}.fastq")
+        script:
+            if( !params.single_end)
+                """
+                cat ${unzipped[0]} ${unzipped[1]} ${unmapped[0]} ${unmapped[1]} > combined_1.fastq
+                """
+            else
+                """
+                cat ${unzipped[0]} ${unmapped[0]} > combined_1.fastq
+                """
+}                
+
 
 process map_to_hla_loci {
     tag "Searching read pairs and their sequences on HLA loci"
     publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
     
     input:
-        tuple val(dataset), path(fastq_1), path(fastq_2), path(ref)
+        tuple val(dataset), path(fastq)
+        path(ref)
     output:
         tuple val(dataset), path(sam)
     script:
         sam = "${dataset}_part.sam"
-        """
-        #mapping using -p to map paired end as single-end
-        #index reference
-        bwa index ${ref}
-        #sort read pairs
-        awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq_1} | sort -S 8G -T. > read1.txt
-        awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq_2} | sort -S 8G -T. > read2.txt
-        join read1.txt read2.txt | awk '{print \$1"\\n"\$2"\\n+\\n"\$3 > "r1.fq";print \$1"\\n"\$4"\\n+\\n"\$5 > "r2.fq"}'
-        #mapping
-        bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
-        """
+        if( !params.single_end)
+            """
+            #mapping using -p to map paired end as single-end
+            #index reference
+            bwa index ${ref}
+            #sort read pairs
+            awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq[0]} | sort -S 8G -T. > read1.txt
+            awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq[1]} | sort -S 8G -T. > read2.txt
+            join read1.txt read2.txt | awk '{print \$1"\\n"\$2"\\n+\\n"\$3 > "r1.fq";print \$1"\\n"\$4"\\n+\\n"\$5 > "r2.fq"}'
+            #mapping
+            bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
+            """
+        else
+            """
+            #mapping using -p to map paired end as single-end
+            #index reference
+            bwa index ${ref}
+
+            #mapping
+            bwa mem -t 8 -P -L 10000 -a ${ref} ${fastq[0]} > ${sam}
+            """
+
 }
 
 process estimate_hla_types {
@@ -109,14 +131,17 @@ process estimate_hla_types {
         tuple val(dataset), file(hla_txt)
     script:
         hla_txt = "${dataset}_result.txt"
-        """
-        #alpha_zero is a hyperparameter
-        #For paired-end read data:
-        #java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
-
-        #For single-end read data:
-        java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01
-        """
+        if( !params.single_end)
+            """
+            #alpha_zero is a hyperparameter
+            #For paired-end read data:
+            #java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
+            """
+        else
+            """
+            #For single-end read data:
+            java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01
+            """
 }
 
 process hla_types_out {
