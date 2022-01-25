@@ -136,7 +136,7 @@ process estimate_hla_types {
             """
             #alpha_zero is a hyperparameter
             #For paired-end read data:
-            #java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
+            java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
             """
         else
             """
