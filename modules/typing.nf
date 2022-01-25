@@ -108,8 +108,8 @@ process map_to_hla_loci {
             awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq[1]} | sort -S 8G -T. > read2.txt
             join read1.txt read2.txt | awk '{print \$1"\\n"\$2"\\n+\\n"\$3 > "r1.fq";print \$1"\\n"\$4"\\n+\\n"\$5 > "r2.fq"}'
             #mapping
-            #bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
-            bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq > ${sam}
+            bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
+            #bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq > ${sam}
             """
         else
             """
@@ -137,7 +137,8 @@ process estimate_hla_types {
             """
             #alpha_zero is a hyperparameter
             #For paired-end read data:
-            java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
+            #java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
+            java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01
             """
         else
             """
