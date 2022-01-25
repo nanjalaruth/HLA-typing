@@ -97,7 +97,7 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 
 
 //  Modules file
-include { mapping; sam_bam } from './modules/fastq_preprocessing'
+include { mapping; sam_bam } from './modules/fastq_preprocessing.nf'
 include { extract_hla_reads; index_hla; read_pairs_search; unmapped_reads; 
     combine_reads; map_to_hla_loci; estimate_hla_types; hla_types_out} from './modules/typing.nf'
 
@@ -135,19 +135,18 @@ workflow {
     // 4) Extract unmapped reads
     unmapped_reads(sam_bam.out)
 
-    // 5) Combine reads
-    input = read_pairs_search.out.combine(unmapped_reads.out)
-                .map {dataset, partial_1, partial_2, data, unmapped_1, unmapped_2
-                -> [dataset, partial_1, partial_2, unmapped_1, unmapped_2]}
-    // input.view()
-    combine_reads(input)
+    // // 5) Combine reads
+    input = read_pairs_search.out
+    unmap = unmapped_reads.out
+    combine_reads(input, unmap)
 
-    // 6) Searching read pairs and their sequences on HLA loci
-    input = combine_reads.out.combine(hla_ref)
-    // input.view()
-    map_to_hla_loci(input)
+    // // 6) Searching read pairs and their sequences on HLA loci
+    input = combine_reads.out
+    ref = hla_ref
+    // // input.view()
+    map_to_hla_loci(input, ref)
 
-    // 7) Estimate hla types
+    // // 7) Estimate hla types
     input = map_to_hla_loci.out.combine(hla_ref)
     estimate_hla_types(input)
     // estimate_hla_types.out.view()
