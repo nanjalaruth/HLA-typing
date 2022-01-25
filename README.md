@@ -39,7 +39,7 @@ Start running your own analysis either by using flags as shown below:
     nextflow run main.nf -profile singularity -c <path to your edited config file> -resume
     ```
     
-### To run the updated version of this pipeline, run:
+## To run the updated version of this pipeline, run:
 
     ```bash
     nextflow pull nanjalaruth/HLA-typing
