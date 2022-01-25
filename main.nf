@@ -137,20 +137,20 @@ workflow {
 
     // // 5) Combine reads
     input = read_pairs_search.out
-    input.view()
+    // input.view()
     unmap = unmapped_reads.out
-    // combine_reads(input, unmap)
+    combine_reads(input, unmap)
 
     // // 6) Searching read pairs and their sequences on HLA loci
-    // input = combine_reads.out
-    // ref = hla_ref
-    // // // input.view()
-    // map_to_hla_loci(input, ref)
+    input = combine_reads.out
+    ref = hla_ref
+    // // input.view()
+    map_to_hla_loci(input, ref)
 
-    // // // 7) Estimate hla types
-    // input = map_to_hla_loci.out.combine(hla_ref)
-    // estimate_hla_types(input)
-    // // estimate_hla_types.out.view()
-    // hla_types_out(estimate_hla_types.out)
+    // // 7) Estimate hla types
+    input = map_to_hla_loci.out.combine(hla_ref)
+    estimate_hla_types(input)
+    // estimate_hla_types.out.view()
+    hla_types_out(estimate_hla_types.out)
 
 }
