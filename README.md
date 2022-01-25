@@ -28,10 +28,7 @@ To execute the pipeline on test dataset run:
 Start running your own analysis either by using flags as shown below:
 
     ```bash
-    nextflow run main.nf -profile singularity -resume --input "*_{1,2}*.fastq.gz" \
-    --reference_genome "path to the human reference genome <hg19>" \
-    --hla_ref "path to the hla reference genome <hla_all_v2.fasta>" \
-    --hla_txt_file "path to the <Allelelist_v2.txt> file" 
+    nextflow run main.nf -profile singularity -resume --input "*_R{1,2}.fastq.gz" --reference_genome "path to the human reference genome <hg19>"  
     ```
  or run your own analysis by modifying the conf/test.config file to suit the path to your data location and then run the command as below:
  
