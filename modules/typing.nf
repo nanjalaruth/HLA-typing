@@ -41,7 +41,7 @@ process read_pairs_search {
             """
         else
             """
-            samtools fastq ${partial_bam} > unzipped_1.fastq 
+            samtools fastq ${partial_bam} > ${dataset}_unzipped_1.fastq 
             """
 }
 
