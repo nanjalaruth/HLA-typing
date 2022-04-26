@@ -99,7 +99,7 @@ log.info "-\033[2m--------------------------------------------------\033[0m-"
 //  Modules file
 include { mapping; sam_bam } from './modules/fastq_preprocessing.nf'
 include { extract_hla_reads; index_hla; read_pairs_search; unmapped_reads; 
-    combine_reads; map_to_hla_loci; estimate_hla_types; hla_types_out} from './modules/typing.nf'
+    combine_reads; map_to_hla_loci; estimate_hla_types; hla_types_out; hla_4d} from './modules/typing.nf'
 
 workflow {
     
@@ -152,5 +152,7 @@ workflow {
     estimate_hla_types(input)
    
     hla_types_out(estimate_hla_types.out)
+
+    hla_4d(estimate_hla_types.out, hla_txt)
 
 }
