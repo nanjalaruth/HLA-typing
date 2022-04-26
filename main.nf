@@ -144,13 +144,13 @@ workflow {
     // // 6) Searching read pairs and their sequences on HLA loci
     input = combine_reads.out
     ref = hla_ref
-    // // input.view()
-    map_to_hla_loci(input, ref)
+    inp=input.combine(ref)
+    map_to_hla_loci(inp)
 
     // // 7) Estimate hla types
     input = map_to_hla_loci.out.combine(hla_ref)
     estimate_hla_types(input)
-    // estimate_hla_types.out.view()
+   
     hla_types_out(estimate_hla_types.out)
 
 }
