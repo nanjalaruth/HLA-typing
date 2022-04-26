@@ -33,11 +33,11 @@ process read_pairs_search {
     input:
         tuple val(dataset), path(partial_bam)
     output:
-        tuple val(dataset), path("unzipped_{1,2}.fastq")
+        tuple val(dataset), path("${dataset}_unzipped_{1,2}.fastq")
     script:
         if( !params.single_end)
             """
-            samtools fastq -1 unzipped_1.fastq -2 unzipped_2.fastq ${partial_bam}
+            samtools fastq -1 ${dataset}_unzipped_1.fastq -2 ${dataset}_unzipped_2.fastq ${partial_bam}
             """
         else
             """
@@ -52,17 +52,18 @@ process unmapped_reads {
     input:
         tuple val(dataset), path(sorted_bam)
     output:
-        tuple val(dataset), path("unmapped_{1,2}.fastq")
+        tuple val(dataset), path("${dataset}_unmapped_{1,2}.fastq")
     script:
         if( !params.single_end)
             """
             samtools view -bh -f 12 ${sorted_bam} > ${dataset}.sorted_unmapped.bam
-            java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=unmapped_1.fastq F2=unmapped_2.fastq
+            java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam \
+                F=${dataset}_unmapped_1.fastq F2=${dataset}_unmapped_2.fastq
             """
         else
             """
             samtools view -bh -f 12 ${sorted_bam} > ${dataset}.sorted_unmapped.bam
-            java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=unmapped_1.fastq
+            java -jar /usr/local/bin/SamToFastq.jar I=${dataset}.sorted_unmapped.bam F=${dataset}_unmapped_1.fastq
             """
 }
 // if( !params.single_end)
@@ -73,16 +74,16 @@ process combine_reads {
             tuple val(dataset), path(unzipped)  
             tuple val(dataset), path(unmapped)  
         output:
-            tuple val(dataset), path("combined_{1,2}.fastq")
+            tuple val(dataset), path("${dataset}_combined_{1,2}.fastq")
         script:
             if( !params.single_end)
                 """
-                cat ${unzipped[0]} ${unmapped[0]} > combined_1.fastq
-                cat ${unzipped[1]} ${unmapped[1]} > combined_2.fastq
+                cat ${unzipped[0]} ${unmapped[0]} > ${dataset}_combined_1.fastq
+                cat ${unzipped[1]} ${unmapped[1]} > ${dataset}_combined_2.fastq
                 """
             else
                 """
-                cat ${unzipped[0]} ${unmapped[0]} > combined_1.fastq
+                cat ${unzipped[0]} ${unmapped[0]} > ${dataset}_combined_1.fastq
                 """
 }                
 
@@ -92,8 +93,7 @@ process map_to_hla_loci {
     publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
     
     input:
-        tuple val(dataset), path(fastq)
-        path(ref)
+        tuple val(dataset), path(fastq), path(ref)
     output:
         tuple val(dataset), path(sam)
     script:
@@ -108,8 +108,8 @@ process map_to_hla_loci {
             awk '{printf substr(\$0,1,length-2);getline;printf "\\t"\$0;getline;getline;print "\\t"\$0}' ${fastq[1]} | sort -S 8G -T. > read2.txt
             join read1.txt read2.txt | awk '{print \$1"\\n"\$2"\\n+\\n"\$3 > "r1.fq";print \$1"\\n"\$4"\\n+\\n"\$5 > "r2.fq"}'
             #mapping
-            bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
-            #bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq > ${sam}
+            #bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq -p > ${sam}
+            bwa mem -t 8 -P -L 10000 -a ${ref} r1.fq r2.fq > ${sam}
             """
         else
             """
@@ -137,8 +137,7 @@ process estimate_hla_types {
             """
             #alpha_zero is a hyperparameter
             #For paired-end read data:
-            #java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
-            java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01
+            java -jar /usr/local/bin/HLAVBSeq.jar ${ref} ${part_sam} ${hla_txt} --alpha_zero 0.01 --is_paired
             """
         else
             """
@@ -159,14 +158,14 @@ process hla_types_out {
         hla_types = "${dataset}_hlatypes.txt"
         final_report = "${dataset}_report.d4.txt"
         """
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^A\\*" | sort -k2 -n -r  > HLA_A.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^B\\*" | sort -k2 -n -r  > HLA_B.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^C\\*" | sort -k2 -n -r  > HLA_C.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DRB1\\*" | sort -k2 -n -r | cut -f1 > HLA_DRB1.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQA1\\*" | sort -k2 -n -r | cut -f1 > HLA_DQA1.txt
-        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQB1\\*" | sort -k2 -n -r | cut -f1 > HLA_DQB1.txt
-        paste HLA_A.txt HLA_B.txt HLA_C.txt HLA_DRB1.txt HLA_DQA1.txt HLA_DQB1.txt > hla_types
-        ( echo -e "HLA_A\tHLA_B\tHLA_C\tHLA_DRB1\tHLA_DQA1\tHLA_DQB1"; cat hla_types ) > ${hla_types}
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^A\\*" | sort -k2 -n -r  > ${dataset}_HLA_A.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^B\\*" | sort -k2 -n -r  > ${dataset}_HLA_B.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^C\\*" | sort -k2 -n -r  > ${dataset}_HLA_C.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DRB1\\*" | sort -k2 -n -r | cut -f1 > ${dataset}_HLA_DRB1.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQA1\\*" | sort -k2 -n -r | cut -f1 > ${dataset}_HLA_DQA1.txt
+        perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQB1\\*" | sort -k2 -n -r | cut -f1 > ${dataset}_HLA_DQB1.txt
+        paste ${dataset}_HLA_A.txt ${dataset}_HLA_B.txt ${dataset}_HLA_C.txt ${dataset}_HLA_DRB1.txt ${dataset}_HLA_DQA1.txt ${dataset}_HLA_DQB1.txt > ${dataset}_hla_types
+        ( echo -e "HLA_A\tHLA_B\tHLA_C\tHLA_DRB1\tHLA_DQA1\tHLA_DQB1"; cat ${dataset}_hla_types ) > ${hla_types}
         python /usr/local/bin/call_hla_digits.py -v ${result_txt} -a /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt -r 90 -d 4 > ${final_report}
         """
 }
