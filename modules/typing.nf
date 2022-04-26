@@ -153,10 +153,9 @@ process hla_types_out {
     input:
         tuple val(dataset), path(result_txt)
     output:
-        tuple val(dataset), file(hla_types), file(final_report)
+        tuple val(dataset), file(hla_types)
     script:
         hla_types = "${dataset}_hlatypes.txt"
-        final_report = "${dataset}_report.d4.txt"
         """
         perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^A\\*" | sort -k2 -n -r  > ${dataset}_HLA_A.txt
         perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^B\\*" | sort -k2 -n -r  > ${dataset}_HLA_B.txt
@@ -166,8 +165,28 @@ process hla_types_out {
         perl /usr/local/bin/parse_result.pl /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt ${result_txt} | grep "^DQB1\\*" | sort -k2 -n -r | cut -f1 > ${dataset}_HLA_DQB1.txt
         paste ${dataset}_HLA_A.txt ${dataset}_HLA_B.txt ${dataset}_HLA_C.txt ${dataset}_HLA_DRB1.txt ${dataset}_HLA_DQA1.txt ${dataset}_HLA_DQB1.txt > ${dataset}_hla_types
         ( echo -e "HLA_A\tHLA_B\tHLA_C\tHLA_DRB1\tHLA_DQA1\tHLA_DQB1"; cat ${dataset}_hla_types ) > ${hla_types}
-        python /usr/local/bin/call_hla_digits.py -v ${result_txt} -a /scratch3/users/nanje/HLA-VBSEQ/Allelelist_v2.txt -r 90 -d 4 > ${final_report}
         """
+}
+
+process hla_4d {
+    tag "Printing 4digit HLA types"
+    publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
+    
+    input:
+        tuple val(dataset), path(result_txt)
+        path(hla_txt)
+    output:
+        tuple val(dataset), file(final_report)
+    script:
+        final_report = "${dataset}_report.d4.txt"
+        if( !params.single_end)
+            """
+            python /usr/local/bin/call_hla_digits.py -v ${result_txt} -a ${hla_txt} -r 90 -d 4 --ispaired > ${final_report}
+            """
+        else
+            """
+            python /usr/local/bin/call_hla_digits.py -v ${result_txt} -a ${hla_txt} -r 90 -d 4 > ${final_report}
+            """
 }
 
 
