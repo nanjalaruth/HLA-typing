@@ -153,6 +153,8 @@ workflow {
    
     hla_types_out(estimate_hla_types.out)
 
-    hla_4d(estimate_hla_types.out, hla_txt)
+    input=estimate_hla_types.out
+    in=input.combine(hla_txt)
+    hla_4d(in)
 
 }
