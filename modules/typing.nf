@@ -173,8 +173,7 @@ process hla_4d {
     publishDir "${params.outDir}/typing", mode: 'copy', overwrite: false
     
     input:
-        tuple val(dataset), path(result_txt)
-        path(hla_txt)
+        tuple val(dataset), path(result_txt), path(hla_txt)
     output:
         tuple val(dataset), file(final_report)
     script:
