@@ -1,0 +1,12 @@
+.nextflow*
+.vscode/
+map-minimap.sh
+modules/typing.nf.save
+output/
+picard-tools-1.119.zip
+results/
+test.sh
+testdata/
+typing.sh
+work/
+mapping-*std*
